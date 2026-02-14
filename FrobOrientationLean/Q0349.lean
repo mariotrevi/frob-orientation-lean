@@ -1904,4 +1904,4 @@ Prove that alpha'' is a root of f''.
 -/
 theorem alpha_is_root_of_f : (f_poly'').eval α'' = 0 := by
   -- Substitute α'' into the polynomial f_poly'' and simplify using the known relation.
-  convert alpha_root'' using 1end Q0349
+  convert alpha_root'' using 1

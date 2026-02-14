@@ -1850,4 +1850,4 @@ theorem final_result_139 {N : ℕ} [Fact (Nat.Prime N)] (hN : N ≠ 139) (P : Id
       rw [h_red, h_sigma];
     · intro h;
       rw [ ← artin_property139' ];
-      convert congr_arg _ ( sigma_alpha_eq_beta_if_s2'' N hN h ) using 1end Q0139
+      convert congr_arg _ ( sigma_alpha_eq_beta_if_s2'' N hN h ) using 1

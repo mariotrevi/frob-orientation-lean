@@ -585,4 +585,4 @@ theorem final_result (N : ℕ) [Fact (Nat.Prime N)] (hN : N ≠ 37) (hN_odd : N 
       · convert congr_arg ( Ideal.Quotient.mk P ) ( cyclic_relations_int.1 ) using 1;
       · convert mem_C1_iff _ _ |>.2 h;
         rw [ Ne.eq_def, ZMod.natCast_eq_zero_iff ];
-        exact fun h => hN <| by have := Nat.prime_dvd_prime_iff_eq ( by decide : Nat.Prime 37 ) ( Fact.out : Nat.Prime N ) ; tauto;end Q0037
+        exact fun h => hN <| by have := Nat.prime_dvd_prime_iff_eq ( by decide : Nat.Prime 37 ) ( Fact.out : Nat.Prime N ) ; tauto;

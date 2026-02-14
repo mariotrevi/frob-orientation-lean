@@ -1881,4 +1881,4 @@ theorem final_result_163 {N : ℕ} [Fact (Nat.Prime N)] (hN : N ≠ 163) (P : Id
       rw [ sigma_alpha_eq_gamma_if_s1_163 N hN h ];
       assumption) (fun h => by
       have := sigma_alpha_eq_beta_if_s2_163 N hN h;
-      rw [ ← this, ← artin_property163 ])end Q0163
+      rw [ ← this, ← artin_property163 ])

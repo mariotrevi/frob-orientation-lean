@@ -442,4 +442,5 @@ theorem mem_adjoin_of_mem_ringOfIntegers {L : Type*} [Field L] [NumberField L] [
     constructor <;> intro h;
     · exact?;
     · exact h ▸ x.2
+end
 end Q0007

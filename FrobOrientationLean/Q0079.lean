@@ -1474,4 +1474,4 @@ theorem final_result (N : ℕ) [Fact (Nat.Prime N)] (hN : N ≠ 79) (hN17 : N �
         rw [ inv_mul_cancel₀ ( by exact h_inv.ne_zero ), mul_one ];
       · -- By definition of user_beta, we have user_beta = -(beta_int : Case79_Ok ⧸ P).
         simp [user_beta];
-        ring!end Q0079
+        ring!

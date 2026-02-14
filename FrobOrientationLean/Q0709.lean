@@ -2595,4 +2595,4 @@ theorem final_result_709 {N : ℕ} [Fact (Nat.Prime N)] (hN : N ≠ 709) (P : Id
       rw [ ← h_sigma, ← artin_property709 ];
     · intro h;
       have := sigma_alpha_eq_beta_if_s2''' N hN h;
-      rw [ ← this, ← artin_property709 ]end Q0709
+      rw [ ← this, ← artin_property709 ]

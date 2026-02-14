@@ -2543,4 +2543,4 @@ theorem final_result_607 {N : ℕ} [Fact (Nat.Prime N)] (hN : N ≠ 607) (P : Id
     rw [sigma_alpha_eq_gamma_if_s1''' N hN h]
   · intro h
     rw [← artin_property607 hN P α'''_int]
-    rw [sigma_alpha_eq_beta_if_s2''' N hN h]end Q0607
+    rw [sigma_alpha_eq_beta_if_s2''' N hN h]

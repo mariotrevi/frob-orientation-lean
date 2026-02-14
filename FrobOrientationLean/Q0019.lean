@@ -562,4 +562,4 @@ theorem final_result {N : ℕ} [Fact (Nat.Prime N)] (hN : N ≠ 19) (P : Ideal �
         convert N_in_S1_iff_c_eq_s2 hN |>.2 h using 1;
       rw [ ← artin_property ];
       rw [ sigma_alpha_eq_beta_or_gamma _ |>.1 h_S1 ];
-      assumptionend Q0019
+      assumption

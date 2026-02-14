@@ -725,4 +725,4 @@ theorem main_theorem (N : ℕ) [Fact N.Prime] (hN_odd : N % 2 ≠ 0) (hN_q : N �
   let gamma_bar := -alpha_bar - beta_bar
   (c = s1 → alpha_bar ^ N = gamma_bar) ∧
   (c = s2 → alpha_bar ^ N = beta_bar) := by
-    exact ⟨ main_theorem_case1 N hN_odd hN_q hN_a P h_irr_N, main_theorem_case2 N hN_odd hN_q hN_a P h_irr_N ⟩end Q0013
+    exact ⟨ main_theorem_case1 N hN_odd hN_q hN_a P h_irr_N, main_theorem_case2 N hN_odd hN_q hN_a P h_irr_N ⟩

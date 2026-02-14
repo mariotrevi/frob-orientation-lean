@@ -5389,4 +5389,4 @@ theorem final_result_1987 (N : ℕ) [Fact (Nat.Prime N)] (hN : N ≠ 1987) (hN_o
   let gamma_bar := Ideal.Quotient.mk P gamma_int_5
   (c1987 N = s1_1987 → alpha_bar ^ N = gamma_bar) ∧
   (c1987 N = s2_1987 → alpha_bar ^ N = beta_bar) := by
-    exact ⟨ fun h => by simpa using final_result_1987_part1 N hN hN_odd hN_a P hP h_period h, fun h => by simpa using final_result_1987_part2 N hN hN_odd hN_a P hP h_period h ⟩end Q1987
+    exact ⟨ fun h => by simpa using final_result_1987_part1 N hN hN_odd hN_a P hP h_period h, fun h => by simpa using final_result_1987_part2 N hN hN_odd hN_a P hP h_period h ⟩

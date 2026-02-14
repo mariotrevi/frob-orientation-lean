@@ -1171,4 +1171,4 @@ theorem final_result_97 {N : ℕ} [Fact (Nat.Prime N)] (hN : N ≠ 97) (hN19 : N
     rw [sigma_alpha_eq_gamma_if_s1 N hN h]
   · intro h
     rw [← artin_property97 hN P α'_int]
-    rw [sigma_alpha_eq_beta_if_s2 N hN h]end Q0097
+    rw [sigma_alpha_eq_beta_if_s2 N hN h]

@@ -1888,4 +1888,4 @@ Final result for q=313: Frobenius action on alpha depends on c'' N.
 theorem final_result_313 {N : ℕ} [Fact (Nat.Prime N)] (hN : N ≠ 313) (P : Ideal 𝓞L313) [P.IsMaximal] [CharP (kP313 P) N] :
   (c'' N = s1'' → (red313 P α_true_int) ^ N = red313 P γ_true_int) ∧
   (c'' N = s2'' → (red313 P α_true_int) ^ N = red313 P β_true_int) := by
-    exact ⟨ fun h => by erw [ ← frobenius_alpha313 N hN P, sigma_alpha_eq_gamma_if_s1'' N hN h ], fun h => by erw [ ← frobenius_alpha313 N hN P, sigma_alpha_eq_beta_if_s2'' N hN h ] ⟩end Q0313
+    exact ⟨ fun h => by erw [ ← frobenius_alpha313 N hN P, sigma_alpha_eq_gamma_if_s1'' N hN h ], fun h => by erw [ ← frobenius_alpha313 N hN P, sigma_alpha_eq_beta_if_s2'' N hN h ] ⟩
