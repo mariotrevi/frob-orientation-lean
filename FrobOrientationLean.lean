@@ -1,4 +1,4 @@
--- import FrobOrientationLean.Q2659
+import FrobOrientationLean.Q2659
 import FrobOrientationLean.Q0007
 import FrobOrientationLean.Q0013
 import FrobOrientationLean.Q0019
@@ -12,7 +12,10 @@ import FrobOrientationLean.Q0349
 import FrobOrientationLean.Q0607
 import FrobOrientationLean.Q0709
 import FrobOrientationLean.Q0877
--- import FrobOrientationLean.Q0937
--- import FrobOrientationLean.Q1063
+import FrobOrientationLean.Q0937
+import FrobOrientationLean.Q1063
 import FrobOrientationLean.Q1129
 import FrobOrientationLean.Q1489
+import FrobOrientationLean.Q1567
+import FrobOrientationLean.Q1987
+import FrobOrientationLean.Q2557
