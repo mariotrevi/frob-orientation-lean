@@ -234,6 +234,563 @@ noncomputable section
 
 
 
+
+
+
+
+
+
+
+
+/-
+Definitions for q=1129, s1, s2, and c(N).
+-/
+def q1129 : ℕ := 1129
+
+instance fact_prime_1129 : Fact (Nat.Prime 1129) := ⟨by native_decide⟩
+
+def s1_1129 : ZMod 1129 := 741
+def s2_1129 : ZMod 1129 := 387
+
+def c1129 (N : ℕ) : ZMod 1129 := (N : ZMod 1129) ^ 376
+
+/-
+Definitions of the cyclotomic field K, zeta, and the ring of integers Ok for q=1129.
+-/
+abbrev K1129 := CyclotomicField 1129 ℚ
+noncomputable def zeta1129 : K1129 := IsCyclotomicExtension.zeta 1129 ℚ K1129
+abbrev Ok1129 := NumberField.RingOfIntegers K1129
+
+/-
+Check for primitive roots modulo 1129.
+-/
+def check_prim_1129 (n : ℕ) : Bool :=
+  let p := 1129
+  let order := p - 1
+  let factors := [2, 3, 47]
+  factors.all fun f => (n ^ (order / f)) % p != 1
+
+#eval check_prim_1129 2
+#eval check_prim_1129 3
+#eval check_prim_1129 5
+#eval check_prim_1129 7
+
+/-
+Find a primitive root modulo 1129.
+-/
+def find_g_1129 : IO Unit := do
+  let p := 1129
+  let order := p - 1
+  let factors := [2, 3, 47]
+  for g in [2:100] do
+    let mut is_prim := true
+    for f in factors do
+      if (g ^ (order / f)) % p == 1 then
+        is_prim := false
+        break
+    if is_prim then
+      IO.println s!"Found primitive root: {g}"
+      return
+  IO.println "No primitive root found in range"
+
+#eval find_g_1129
+
+/-
+Definitions of generator g and cosets H, C1, C2 for q=1129.
+-/
+def g1129 : ZMod 1129 := 11
+
+def H1129 : Finset (ZMod 1129) := ((Finset.univ : Finset (ZMod 1129)).filter (fun x => x ≠ 0)).image (fun x => x^3)
+
+def C1_1129 : Finset (ZMod 1129) := H1129.image (fun x => g1129 * x)
+
+def C2_1129 : Finset (ZMod 1129) := H1129.image (fun x => g1129^2 * x)
+
+/-
+Definitions of Gaussian periods and period differences (alpha', beta', gamma') for q=1129.
+-/
+open scoped BigOperators
+
+noncomputable def eta1129 (S : Finset (ZMod 1129)) : K1129 := ∑ x ∈ S, zeta1129^(x.val)
+
+noncomputable def eta0_1129 := eta1129 H1129
+noncomputable def eta1_1129 := eta1129 C1_1129
+noncomputable def eta2_1129 := eta1129 C2_1129
+
+noncomputable def alpha_prime_1129 := eta0_1129 - eta1_1129
+noncomputable def beta_prime_1129 := eta1_1129 - eta2_1129
+noncomputable def gamma_prime_1129 := eta2_1129 - eta0_1129
+
+/-
+The 1129th cyclotomic polynomial is irreducible over Q.
+-/
+theorem h_irr_1129 : Irreducible (Polynomial.cyclotomic 1129 ℚ) := by
+  exact Polynomial.cyclotomic.irreducible_rat <| by decide;
+
+/-
+Definitions of Galois automorphisms sigma and sigma_int for q=1129.
+-/
+noncomputable def sigma1129 (n : (ZMod 1129)ˣ) : K1129 ≃ₐ[ℚ] K1129 :=
+  (IsCyclotomicExtension.autEquivPow K1129 h_irr_1129).symm n
+
+noncomputable def sigma_int1129 (n : (ZMod 1129)ˣ) : Ok1129 ≃ₐ[ℤ] Ok1129 :=
+  (NumberField.RingOfIntegers.mapAlgEquiv (sigma1129 n)).restrictScalars ℤ
+
+/-
+zeta1129 is an algebraic integer.
+-/
+theorem zeta_isIntegral_1129 : IsIntegral ℤ zeta1129 := by
+  -- By definition, $zeta_{1129}$ is a root of the monic polynomial $x^{1129} - 1$ over $\mathbb{Z}$.
+  use Polynomial.X ^ 1129 - 1;
+  -- Since $zeta_{1129}$ is a root of unity, we have $zeta_{1129}^{1129} = 1$.
+  have h_root : zeta1129 ^ 1129 = 1 := by
+    convert IsCyclotomicExtension.zeta_pow 1129 ℚ K1129;
+  exact ⟨ Polynomial.monic_X_pow_sub_C _ ( by norm_num ), by simp +decide [ h_root ] ⟩
+
+/-
+Definitions of integral periods and differences for q=1129.
+-/
+def zeta_int1129 : Ok1129 := ⟨zeta1129, zeta_isIntegral_1129⟩
+
+noncomputable def eta_int1129 (S : Finset (ZMod 1129)) : Ok1129 := ∑ x ∈ S, zeta_int1129^(x.val)
+
+noncomputable def eta0_int1129 := eta_int1129 H1129
+noncomputable def eta1_int1129 := eta_int1129 C1_1129
+noncomputable def eta2_int1129 := eta_int1129 C2_1129
+
+noncomputable def alpha_prime_int1129 := eta0_int1129 - eta1_int1129
+noncomputable def beta_prime_int1129 := eta1_int1129 - eta2_int1129
+noncomputable def gamma_prime_int1129 := eta2_int1129 - eta0_int1129
+
+/-
+Definitions of sign-corrected roots alpha, beta, gamma for q=1129.
+-/
+noncomputable def sign_1129 : ℤ :=
+  if alpha_prime_int1129 * beta_prime_int1129 * gamma_prime_int1129 = (1129 : Ok1129) then 1 else -1
+
+noncomputable def alpha_int1129 := (sign_1129 : Ok1129) * alpha_prime_int1129
+noncomputable def beta_int1129 := (sign_1129 : Ok1129) * beta_prime_int1129
+noncomputable def gamma_int1129 := (sign_1129 : Ok1129) * gamma_prime_int1129
+
+noncomputable def alpha1129_field : K1129 := alpha_int1129
+noncomputable def beta1129_field : K1129 := beta_int1129
+noncomputable def gamma1129_field : K1129 := gamma_int1129
+
+/-
+Compute coefficients for the algebraic relations of beta and gamma in terms of alpha for q=1129.
+-/
+def find_coeffs_1129 : IO Unit := do
+  let q := 1129
+  let a := 67
+  -- Find p = k*q + 1
+  let mut p := 0
+  for k in [2:200] do
+    let cand := k * q + 1
+    if Nat.Prime cand then
+      p := cand
+      break
+  
+  if p == 0 then
+    IO.println "No prime found"
+    return
+
+  IO.println s!"Using prime p = {p}"
+
+  -- Find element of order q
+  let mut g_p := 0
+  for g in [2:p] do
+    let zeta := (g : Nat) ^ ((p - 1) / q) % p
+    if zeta != 1 then
+      g_p := g
+      break
+  
+  let zeta := (g_p : Nat) ^ ((p - 1) / q) % p
+  IO.println s!"zeta = {zeta}"
+
+  -- Cosets of cubic residues mod q
+  -- g_q = 11
+  let g_q := 11
+  let mut H : List Nat := []
+  let mut x := 1
+  let g_q_3 := (g_q * g_q * g_q) % q
+  for _ in [0:(q-1)/3] do
+    H := x :: H
+    x := (x * g_q_3) % q
+  
+  let C1 := H.map (fun h => (h * g_q) % q)
+  let C2 := H.map (fun h => (h * g_q * g_q) % q)
+
+  -- Periods mod p
+  let sum_zeta (S : List Nat) : Nat :=
+    S.foldl (fun acc h => (acc + (zeta ^ h) % p) % p) 0
+  
+  let eta0 := sum_zeta H
+  let eta1 := sum_zeta C1
+  let eta2 := sum_zeta C2
+
+  -- Differences
+  let alpha_prime := (eta0 + p - eta1) % p
+  let beta_prime := (eta1 + p - eta2) % p
+  let gamma_prime := (eta2 + p - eta0) % p
+
+  -- Check sign convention
+  let prod := (alpha_prime * beta_prime) % p * gamma_prime % p
+  let q_mod_p := q % p
+  
+  let mut alpha := 0
+  let mut beta := 0
+  let mut gamma := 0
+
+  if prod == q_mod_p then
+    alpha := alpha_prime
+    beta := beta_prime
+    gamma := gamma_prime
+    IO.println "Sign convention: positive"
+  else
+    alpha := (p - alpha_prime) % p
+    beta := (p - beta_prime) % p
+    gamma := (p - gamma_prime) % p
+    IO.println "Sign convention: negative"
+
+  -- Solve 67 * beta = c0 + c1 * alpha + c2 * alpha^2 mod p
+  let sub (x y : Nat) := (x + p - y) % p
+  let mul (x y : Nat) := (x * y) % p
+  let add (x y : Nat) := (x + y) % p
+  let pow (x n : Nat) := x ^ n % p
+  let inv (x : Nat) := x ^ (p - 2) % p
+
+  let det := mul (sub beta alpha) (mul (sub gamma alpha) (sub gamma beta))
+  let det_inv := inv det
+
+  let rhs0 := mul 67 beta
+  let rhs1 := mul 67 gamma
+  let rhs2 := mul 67 alpha
+
+  -- Solve for c0, c1, c2
+  -- c0
+  let term0 := mul rhs0 (sub (mul beta (mul gamma gamma)) (mul gamma (mul beta beta)))
+  let term1 := mul rhs1 (sub (mul gamma (mul alpha alpha)) (mul alpha (mul gamma gamma)))
+  let term2 := mul rhs2 (sub (mul alpha (mul beta beta)) (mul beta (mul alpha alpha)))
+  let c0 := mul (add term0 (add term1 term2)) det_inv
+
+  -- c1
+  let term0_1 := mul 1 (sub (mul rhs1 (mul gamma gamma)) (mul rhs2 (mul beta beta)))
+  let term1_1 := mul 1 (sub (mul rhs2 (mul alpha alpha)) (mul rhs0 (mul gamma gamma)))
+  let term2_1 := mul 1 (sub (mul rhs0 (mul beta beta)) (mul rhs1 (mul alpha alpha)))
+  let c1 := mul (add term0_1 (add term1_1 term2_1)) det_inv
+
+  -- c2
+  let term0_2 := mul 1 (sub (mul beta rhs2) (mul gamma rhs1))
+  let term1_2 := mul 1 (sub (mul gamma rhs0) (mul alpha rhs2))
+  let term2_2 := mul 1 (sub (mul alpha rhs1) (mul beta rhs0))
+  let c2 := mul (add term0_2 (add term1_2 term2_2)) det_inv
+
+  let to_signed (x : Nat) : Int :=
+    if x > p / 2 then (x : Int) - p else x
+
+  IO.println s!"Coefficients for beta: c0={to_signed c0}, c1={to_signed c1}, c2={to_signed c2}"
+  
+  -- Also for gamma
+  let rhs0_g := mul 67 gamma
+  let rhs1_g := mul 67 alpha
+  let rhs2_g := mul 67 beta
+
+  let term0_g := mul rhs0_g (sub (mul beta (mul gamma gamma)) (mul gamma (mul beta beta)))
+  let term1_g := mul rhs1_g (sub (mul gamma (mul alpha alpha)) (mul alpha (mul gamma gamma)))
+  let term2_g := mul rhs2_g (sub (mul alpha (mul beta beta)) (mul beta (mul alpha alpha)))
+  let d0 := mul (add term0_g (add term1_g term2_g)) det_inv
+
+  let term0_1g := mul 1 (sub (mul rhs1_g (mul gamma gamma)) (mul rhs2_g (mul beta beta)))
+  let term1_1g := mul 1 (sub (mul rhs2_g (mul alpha alpha)) (mul rhs0_g (mul gamma gamma)))
+  let term2_1g := mul 1 (sub (mul rhs0_g (mul beta beta)) (mul rhs1_g (mul alpha alpha)))
+  let d1 := mul (add term0_1g (add term1_1g term2_1g)) det_inv
+
+  let term0_2g := mul 1 (sub (mul beta rhs2_g) (mul gamma rhs1_g))
+  let term1_2g := mul 1 (sub (mul gamma rhs0_g) (mul alpha rhs2_g))
+  let term2_2g := mul 1 (sub (mul alpha rhs1_g) (mul beta rhs0_g))
+  let d2 := mul (add term0_2g (add term1_2g term2_2g)) det_inv
+
+  IO.println s!"Coefficients for gamma: d0={to_signed d0}, d1={to_signed d1}, d2={to_signed d2}"
+
+#eval find_coeffs_1129
+
+/-
+Assumptions for the Dream Theorem for q=1129: period equation, product of roots, and algebraic relations.
+-/
+def DreamAssumptions_1129 : Prop :=
+  alpha_int1129^3 = 1129 * alpha_int1129 + 1129 ∧
+  alpha_int1129 * beta_int1129 * gamma_int1129 = 1129 ∧
+  67 * beta_int1129 = 3 * alpha_int1129^2 - 38 * alpha_int1129 - 2258 ∧
+  67 * gamma_int1129 = -3 * alpha_int1129^2 - 29 * alpha_int1129 + 2258
+
+/-
+Define N as a unit mod 1129 and prove sigma maps zeta to zeta^n.
+-/
+def N_mod_1129 (N : ℕ) [Fact (Nat.Prime N)] (hN : N ≠ 1129) : (ZMod 1129)ˣ :=
+  ZMod.unitOfCoprime N (Nat.Coprime.symm ((Nat.coprime_primes (by norm_num) (Fact.out)).mpr hN.symm))
+
+lemma sigma_int_zeta_pow_1129 (n : (ZMod 1129)ˣ) :
+  sigma_int1129 n zeta_int1129 = zeta_int1129 ^ (n : ZMod 1129).val := by
+    unfold sigma_int1129;
+    simp +decide [ sigma1129 ];
+    erw [ Subtype.mk_eq_mk ];
+    erw [ PowerBasis.equivOfMinpoly_gen ];
+    exact?
+
+/-
+The Artin property holds for zeta: sigma_N(zeta) = zeta^N mod P.
+-/
+theorem artin_property_zeta_1129 (N : ℕ) [Fact (Nat.Prime N)] (hN : N ≠ 1129) (P : Ideal Ok1129) [P.IsPrime] (hP : P.LiesOver (Ideal.span {(N : ℤ)})) :
+  Ideal.Quotient.mk P (sigma_int1129 (N_mod_1129 N hN) zeta_int1129) = (Ideal.Quotient.mk P zeta_int1129)^N := by
+    rw [sigma_int_zeta_pow_1129];
+    -- Since $N \equiv N \mod 1129 \pmod{1129}$, we have $zeta_int1129^N \equiv zeta_int1129^{N \mod 1129} \pmod{P}$.
+    have h_cong : zeta_int1129 ^ N = zeta_int1129 ^ (N % 1129) := by
+      have h_cong : zeta_int1129 ^ 1129 = 1 := by
+        -- Since $zeta_{1129}$ is a primitive 1129th   root  of unity, we have $zeta_{1129}^{1129} = 1$.
+        have h_zeta_pow : zeta1129 ^ 1129 = 1 := by
+          exact IsPrimitiveRoot.pow_eq_one ( show IsPrimitiveRoot zeta1129 1129 from by exact ( IsCyclotomicExtension.zeta_spec 1129 ℚ K1129 ) )
+        generalize_proofs at *; (
+        exact Subtype.ext h_zeta_pow);
+      rw [ ← Nat.mod_add_div N 1129, pow_add, pow_mul ] ; aesop;
+    convert congr_arg ( Ideal.Quotient.mk P ) h_cong.symm using 1
+
+/-
+zeta_int1129 is a primitive 1129th root of unity.
+-/
+lemma zeta_int_isPrimitiveRoot_1129 : IsPrimitiveRoot zeta_int1129 1129 := by
+  have h_zeta_prim : IsPrimitiveRoot (IsCyclotomicExtension.zeta 1129 ℚ K1129) 1129 := by
+    exact?;
+  simp_all +decide [ IsPrimitiveRoot.iff_def ];
+  convert h_zeta_prim using 1;
+  · erw [ ← Subtype.coe_inj ] ; simp +decide [ zeta_int1129 ];
+    erw [ Subtype.mk_eq_mk ] ; norm_num [ zeta1129 ];
+  · constructor <;> intro h l hl <;> simp_all +decide [ ← Subtype.coe_inj ];
+    convert h l _;
+    convert congr_arg Subtype.val hl using 1
+
+theorem Ok1129_eq_adjoin : (⊤ : Subalgebra ℤ Ok1129) = Algebra.adjoin ℤ {zeta_int1129} := by
+  apply le_antisymm;
+  · have := @IsCyclotomicExtension.Rat.isIntegralClosure_adjoin_singleton_of_prime;
+    specialize this ( show IsPrimitiveRoot zeta1129 1129 from ?_ );
+    · convert IsCyclotomicExtension.zeta_spec 1129 ℚ K1129;
+    · intro x hx;
+      have := this.isIntegral_iff.mp ( show IsIntegral ℤ ( x : K1129 ) from by
+                                        exact x.2 );
+      obtain ⟨ y, hy ⟩ := this;
+      rcases y with ⟨ y, hy ⟩;
+      rw [ Algebra.adjoin_singleton_eq_range_aeval ] at *;
+      obtain ⟨ p, rfl ⟩ := ‹y ∈ ( Polynomial.aeval zeta1129 ).range›;
+      use p;
+      ext; simp_all +decide [ Polynomial.aeval_def, Polynomial.eval₂_eq_sum_range ] ;
+      convert hy using 1;
+  · exact le_top
+
+/-
+The Artin property holds for all elements of Ok1129: sigma_N(x) = x^N mod P.
+-/
+theorem artin_property_1129 (N : ℕ) [Fact (Nat.Prime N)] (hN : N ≠ 1129) (P : Ideal Ok1129) [P.IsPrime] (hP : P.LiesOver (Ideal.span {(N : ℤ)})) (x : Ok1129) :
+  Ideal.Quotient.mk P (sigma_int1129 (N_mod_1129 N hN) x) = (Ideal.Quotient.mk P x)^N := by
+    have h_ind : ∀ x ∈ Algebra.adjoin ℤ {zeta_int1129}, Ideal.Quotient.mk P (sigma_int1129 (N_mod_1129 N hN) x) = (Ideal.Quotient.mk P x)^N := by
+      intro x hx
+      induction' hx using Algebra.adjoin_induction with x hx ih
+      generalize_proofs at *; (
+      convert artin_property_zeta_1129 N hN P hP using 1 ; aesop
+      skip;
+      cases hx ; aesop
+      skip);
+      · -- Since $P$ lies over $N$, we have $N \in P$, which implies that $N \cdot ih \equiv 0 \pmod{P}$ for any integer $ih$.
+        have hN_in_P : (N : Ok1129) ∈ P := by
+          have := hP.1; simp_all +decide [ Ideal.mem_span_singleton ] ;
+          exact Ideal.mem_comap.mp ( this ▸ Ideal.mem_span_singleton_self _ )
+        generalize_proofs at *; (
+        erw [ Ideal.Quotient.eq ] ; simp_all +decide [ ← ZMod.intCast_eq_intCast_iff ] ;
+        have h_fermat : ∀ (ih : ℤ), (ih : Ok1129) ^ N - ih ∈ P := by
+          intro ih
+          have h_fermat : (ih : ℤ) ^ N - ih ≡ 0 [ZMOD N] := by
+            haveI := Fact.mk ( Fact.out : Nat.Prime N ) ; simp +decide [ ← ZMod.intCast_eq_intCast_iff ] ;
+          generalize_proofs at *; (
+          obtain ⟨ k, hk ⟩ := h_fermat.symm.dvd
+          generalize_proofs at *; (
+          convert P.mul_mem_right ( k : Ok1129 ) hN_in_P using 1 ; norm_cast ; aesop;))
+        generalize_proofs at *; (
+        simpa using P.neg_mem ( h_fermat ih ) |> fun h => by simpa using h;));
+      · have h_frobenius : ∀ (x y : Ok1129 ⧸ P), (x + y)^N = x^N + y^N := by
+          intro x y
+          have h_char : CharP (Ok1129 ⧸ P) N := by
+            have := hP.1; simp_all +decide [ Ideal.Quotient.eq_zero_iff_mem ] ;
+            rw [ eq_comm ] at this;
+            rw [ Ideal.ext_iff ] at this;
+            refine' ⟨ fun n => _ ⟩;
+            erw [ Ideal.Quotient.eq_zero_iff_mem ] ; specialize this n ; simp_all +decide [ Ideal.mem_span_singleton ] ;
+            norm_cast
+          exact?
+        generalize_proofs at *; (
+        simp_all +decide [ RingHom.map_add ]);
+      · simp_all +decide [ mul_pow ]
+    generalize_proofs at *; (
+    have := Ok1129_eq_adjoin.symm ▸ Algebra.mem_top ( x := x ) ; aesop;)
+
+/-
+The Galois automorphism sigma_n permutes the Gaussian periods by multiplying the set S by n.
+-/
+lemma sigma_eta_1129 (n : (ZMod 1129)ˣ) (S : Finset (ZMod 1129)) :
+  sigma_int1129 n (eta_int1129 S) = eta_int1129 (S.image (fun x => (n : ZMod 1129) * x)) := by
+    unfold eta_int1129;
+    simp +zetaDelta at *;
+    refine' Finset.sum_congr rfl fun x hx => _;
+    convert congr_arg ( · ^ x.val ) ( sigma_int_zeta_pow_1129 n ) using 1;
+    rw [ ← pow_mul, ZMod.val_mul ];
+    rw [ ← Nat.mod_add_div ( ( n : ZMod 1129 ).val * x.val ) 1129, pow_add, pow_mul ] ; norm_num [ zeta_int_isPrimitiveRoot_1129.pow_eq_one ]
+
+/-
+Multiplication by an element of H permutes the cosets trivially.
+-/
+lemma action_H_1129 (n : ZMod 1129) (hn : n ∈ H1129) :
+  H1129.image (fun x => n * x) = H1129 ∧
+  C1_1129.image (fun x => n * x) = C1_1129 ∧
+  C2_1129.image (fun x => n * x) = C2_1129 := by
+    native_decide +revert
+
+/-
+Multiplication by an element of C1 permutes the cosets cyclically (H->C1->C2->H).
+-/
+lemma action_C1_1129 (n : ZMod 1129) (hn : n ∈ C1_1129) :
+  H1129.image (fun x => n * x) = C1_1129 ∧
+  C1_1129.image (fun x => n * x) = C2_1129 ∧
+  C2_1129.image (fun x => n * x) = H1129 := by
+    refine' ⟨ _, _, _ ⟩;
+    · native_decide +revert;
+    · native_decide +revert;
+    · native_decide +revert
+
+/-
+Multiplication by an element of C2 permutes the cosets cyclically (H->C2->C1->H).
+-/
+lemma action_C2_1129 (n : ZMod 1129) (hn : n ∈ C2_1129) :
+  H1129.image (fun x => n * x) = C2_1129 ∧
+  C1_1129.image (fun x => n * x) = H1129 ∧
+  C2_1129.image (fun x => n * x) = C1_1129 := by
+    refine' ⟨ _, _, _ ⟩;
+    · native_decide +revert;
+    · native_decide +revert;
+    · native_decide +revert
+
+/-
+The Galois automorphism sigma_n permutes alpha, beta, gamma according to the coset of n.
+-/
+theorem global_permutation_1129 (n : (ZMod 1129)ˣ) :
+  ((n : ZMod 1129) ∈ C1_1129 → sigma_int1129 n alpha_int1129 = beta_int1129) ∧
+  ((n : ZMod 1129) ∈ C2_1129 → sigma_int1129 n alpha_int1129 = gamma_int1129) ∧
+  ((n : ZMod 1129) ∈ H1129 → sigma_int1129 n alpha_int1129 = alpha_int1129) := by
+    refine' ⟨ fun hn => _, fun hn => _, fun hn => _ ⟩;
+    · -- By definition of $sigma_int1129$, we know that $sigma_int1129 n alpha_prime_int1129 = beta_prime_int1129$.
+      have h_sigma_alpha : sigma_int1129 n alpha_prime_int1129 = beta_prime_int1129 := by
+        unfold alpha_prime_int1129 beta_prime_int1129 eta0_int1129 eta1_int1129 eta2_int1129;
+        rw [ map_sub, sigma_eta_1129, sigma_eta_1129 ];
+        rw [ action_C1_1129 _ hn |>.1, action_C1_1129 _ hn |>.2.1 ];
+      unfold alpha_int1129 beta_int1129; aesop;
+    · unfold alpha_int1129 gamma_int1129;
+      unfold alpha_prime_int1129 gamma_prime_int1129; simp +decide [ mul_assoc, map_mul ] ;
+      unfold eta0_int1129 eta1_int1129 eta2_int1129; rw [ sigma_eta_1129, sigma_eta_1129 ] ;
+      rw [ action_C2_1129 _ hn |>.1, action_C2_1129 _ hn |>.2.1 ] ; norm_num;
+    · -- By definition of $alpha_prime_int1129$, we have $sigma_int1129 n alpha_prime_int1129 = alpha_prime_int1129$.
+      have h_sigma_alpha_prime : sigma_int1129 n alpha_prime_int1129 = alpha_prime_int1129 := by
+        unfold alpha_prime_int1129;
+        unfold eta0_int1129 eta1_int1129; rw [ map_sub ] ;
+        rw [ sigma_eta_1129, sigma_eta_1129 ];
+        rw [ action_H_1129 _ hn |>.1, action_H_1129 _ hn |>.2.1 ];
+      unfold alpha_int1129; aesop;
+
+/-
+Check the value of c(g) for q=1129.
+-/
+def check_c_val_1129 : IO Unit := do
+  let q := 1129
+  let c (n : Nat) := (n : Nat) ^ 376 % q
+  let s1 := 741
+  let s2 := 387
+  let g := 11
+  let cg := c g
+  IO.println s!"c(g) = {cg}"
+  if cg == s1 then IO.println "c(g) = s1 (so s1 <-> C1)"
+  else if cg == s2 then IO.println "c(g) = s2 (so s2 <-> C1)"
+  else IO.println "c(g) is neither"
+
+#eval check_c_val_1129
+
+/-
+Definition of the cubic character chi1129.
+-/
+def chi1129 (x : ZMod 1129) : ZMod 1129 := x ^ 376
+
+/-
+Multiplicativity of the cubic character chi1129.
+-/
+lemma chi1129_mul (x y : ZMod 1129) : chi1129 (x * y) = chi1129 x * chi1129 y := by
+  unfold chi1129; ring;
+
+/-
+The cubic character is 1 on H.
+-/
+lemma chi1129_val_H (x : ZMod 1129) (hx : x ∈ H1129) : chi1129 x = 1 := by
+  native_decide +revert
+
+/-
+The cubic character is s2 on C1.
+-/
+lemma chi1129_val_C1 (x : ZMod 1129) (hx : x ∈ C1_1129) : chi1129 x = s2_1129 := by
+  native_decide +revert
+
+/-
+The cubic character is s1 on C2.
+-/
+lemma chi1129_val_C2 (x : ZMod 1129) (hx : x ∈ C2_1129) : chi1129 x = s1_1129 := by
+  native_decide +revert
+
+/-
+s1 is not equal to s2 mod 1129.
+-/
+lemma s1_ne_s2_1129 : s1_1129 ≠ s2_1129 := by native_decide
+
+/-
+Characterization of C1 by chi values.
+-/
+lemma mem_C1_iff_chi_eq_s2_1129 (n : ZMod 1129) (hn : n ≠ 0) : n ∈ C1_1129 ↔ chi1129 n = s2_1129 := by
+  native_decide +revert
+
+/-
+Characterization of C2 by chi values.
+-/
+lemma mem_C2_iff_chi_eq_s1_1129 (n : ZMod 1129) (hn : n ≠ 0) : n ∈ C2_1129 ↔ chi1129 n = s1_1129 := by
+  native_decide +revert
+
+/-
+The Dream Theorem for q=1129.
+-/
+theorem final_result_1129 (N : ℕ) [Fact (Nat.Prime N)] (hN : N ≠ 1129) (hN_odd : N % 2 = 1) (hN_a : Nat.Coprime 67 N)
+  (P : Ideal Ok1129) [P.IsMaximal] (hP : P.LiesOver (Ideal.span {(N : ℤ)}))
+  (h_assum : DreamAssumptions_1129) :
+  let alpha_bar := Ideal.Quotient.mk P alpha_int1129
+  let beta_bar := Ideal.Quotient.mk P beta_int1129
+  let gamma_bar := Ideal.Quotient.mk P gamma_int1129
+  (chi1129 N = s1_1129 → alpha_bar ^ N = gamma_bar) ∧
+  (chi1129 N = s2_1129 → alpha_bar ^ N = beta_bar) := by
+    -- Let $\sigma_N$ be the Frobenius automorphism. By the Artin property, $\bar{\alpha}^N = \overline{\sigma_N(\alpha)}$. If $\chi(N) = s_1$, then $N \in C_2$. By global permutation, $\sigma_N(\alpha) = \gamma$. So $\bar{\alpha}^N = \bar{\gamma}$. If $\chi(N) = s_2$, then $N \in C_1$. By global permutation, $\sigma_N(\alpha) = \beta$. So $\bar{\alpha}^N = \bar{\beta}$.
+    apply And.intro (by
+    intro hchi1;
+    rw [ ← artin_property_1129 ];
+    rw [ global_permutation_1129 _ |>.2.1 ];
+    any_goals assumption;
+    apply (mem_C2_iff_chi_eq_s1_1129 _ _).mpr hchi1;
+    intro h; simp_all +decide [ ZMod.natCast_eq_zero_iff ] ;) (by
+    intro hchi;
+    -- By the Artin property, $\bar{\alpha}^N = \overline{\sigma_N(\alpha)}$.
+    have h_artin : (Ideal.Quotient.mk P (sigma_int1129 (N_mod_1129 N hN) alpha_int1129)) = (Ideal.Quotient.mk P alpha_int1129) ^ N := by
+      apply artin_property_1129 N hN P hP alpha_int1129;
+    rw [ ← h_artin, global_permutation_1129 _ |>.1 ];
+    convert mem_C1_iff_chi_eq_s2_1129 _ _ |>.2 hchi;
+    intro h; simp_all +decide [ ZMod.natCast_eq_zero_iff ] ;)
+
 /-
 Define q=1489, prove it is prime, and define constants s1, s2, and the cubic character c(N).
 -/
