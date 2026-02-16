@@ -238,6 +238,499 @@ noncomputable section
 
 
 
+
+
+
+
+
+
+
+
+
+
+def q1567 : ℕ := 1567
+
+instance fact_prime_1567 : Fact (Nat.Prime 1567) := ⟨by native_decide⟩
+
+def s1_1567 : ZMod 1567 := 1031
+def s2_1567 : ZMod 1567 := 535
+def c1567 (N : ℕ) : ZMod 1567 := (N : ZMod 1567)^522
+
+def find_g_1567 : IO Unit := do
+  let q := 1567
+  let s2 := 535
+  let c (n : Nat) := (n : Nat) ^ 522 % q
+  let order := q - 1
+  let factors := [2, 3, 29] -- 1566 = 2 * 783 = 2 * 3 * 261 = 2 * 3 * 9 * 29 = 2 * 27 * 29
+  
+  for g in [2:100] do
+    let mut is_prim := true
+    for f in factors do
+      if (g ^ (order / f)) % q == 1 then
+        is_prim := false
+        break
+    
+    if is_prim then
+      if c g == s2 then
+        IO.println s!"Found good generator: {g}"
+        return
+  
+  IO.println "No generator found in range"
+
+#eval find_g_1567
+
+abbrev K1567 := CyclotomicField 1567 ℚ
+
+noncomputable def zeta1567 : K1567 := IsCyclotomicExtension.zeta 1567 ℚ K1567
+
+def g1567 : ZMod 1567 := 3
+
+def H1567 : Finset (ZMod 1567) := ((Finset.univ : Finset (ZMod 1567)).filter (fun x => x ≠ 0)).image (fun x => x^3)
+
+def C1_1567 : Finset (ZMod 1567) := H1567.image (fun x => g1567 * x)
+
+def C2_1567 : Finset (ZMod 1567) := H1567.image (fun x => g1567^2 * x)
+
+open scoped BigOperators
+
+noncomputable def eta1567 (S : Finset (ZMod 1567)) : K1567 := ∑ x ∈ S, zeta1567^(x.val)
+
+noncomputable def eta0_1567 := eta1567 H1567
+noncomputable def eta1_1567 := eta1567 C1_1567
+noncomputable def eta2_1567 := eta1567 C2_1567
+
+noncomputable def alpha_prime_1567 := eta0_1567 - eta1_1567
+noncomputable def beta_prime_1567 := eta1_1567 - eta2_1567
+noncomputable def gamma_prime_1567 := eta2_1567 - eta0_1567
+
+abbrev Ok1567 := NumberField.RingOfIntegers K1567
+
+theorem h_irr_1567 : Irreducible (Polynomial.cyclotomic 1567 ℚ) := by
+  -- The cyclotomic polynomial $\Phi_{1567}(x)$ is irreducible over $\mathbb{Q}$ by definition.
+  apply Polynomial.cyclotomic.irreducible_rat; norm_num
+
+noncomputable def sigma1567 (n : (ZMod 1567)ˣ) : K1567 ≃ₐ[ℚ] K1567 :=
+  (IsCyclotomicExtension.autEquivPow K1567 h_irr_1567).symm n
+
+theorem zeta_isIntegral_1567 : IsIntegral ℤ zeta1567 := by
+  -- By definition of $zeta1567$, we know that it is a root of the polynomial $x^{1567} - 1$.
+  have h_root : zeta1567 ^ 1567 = 1 := by
+    -- By definition of $zeta1567$, we know that $zeta1567^{1567} = 1$.
+    apply IsCyclotomicExtension.zeta_pow;
+  exact ⟨ Polynomial.X ^ 1567 - 1, by exact Polynomial.monic_X_pow_sub_C _ ( by decide ), by aesop ⟩
+
+def zeta_int1567 : Ok1567 := ⟨zeta1567, zeta_isIntegral_1567⟩
+
+noncomputable def sigma_int1567 (n : (ZMod 1567)ˣ) : Ok1567 ≃ₐ[ℤ] Ok1567 :=
+  (NumberField.RingOfIntegers.mapAlgEquiv (sigma1567 n)).restrictScalars ℤ
+
+noncomputable def eta_int1567 (S : Finset (ZMod 1567)) : Ok1567 := ∑ x ∈ S, zeta_int1567^(x.val)
+
+noncomputable def eta0_int1567 := eta_int1567 H1567
+noncomputable def eta1_int1567 := eta_int1567 C1_1567
+noncomputable def eta2_int1567 := eta_int1567 C2_1567
+
+noncomputable def alpha_prime_int1567 := eta0_int1567 - eta1_int1567
+noncomputable def beta_prime_int1567 := eta1_int1567 - eta2_int1567
+noncomputable def gamma_prime_int1567 := eta2_int1567 - eta0_int1567
+
+open Classical
+
+noncomputable def sign_1567 : ℤ :=
+  if alpha_prime_int1567 * beta_prime_int1567 * gamma_prime_int1567 = (1567 : Ok1567) then 1 else -1
+
+noncomputable def alpha_int1567 := (sign_1567 : Ok1567) * alpha_prime_int1567
+noncomputable def beta_int1567 := (sign_1567 : Ok1567) * beta_prime_int1567
+noncomputable def gamma_int1567 := (sign_1567 : Ok1567) * gamma_prime_int1567
+
+noncomputable def alpha1567_field : K1567 := alpha_int1567
+noncomputable def beta1567_field : K1567 := beta_int1567
+noncomputable def gamma1567_field : K1567 := gamma_int1567
+
+def find_coeffs_1567 : IO Unit := do
+  let q := 1567
+  let a := 79
+  -- Find p = k*q + 1
+  let mut p := 0
+  for k in [2:200] do
+    let cand := k * q + 1
+    if Nat.Prime cand then
+      p := cand
+      break
+  
+  if p == 0 then
+    IO.println "No prime found"
+    return
+
+  IO.println s!"Using prime p = {p}"
+
+  -- Find element of order q
+  let mut g_p := 0
+  for g in [2:p] do
+    let zeta := (g : Nat) ^ ((p - 1) / q) % p
+    if zeta != 1 then
+      g_p := g
+      break
+  
+  let zeta := (g_p : Nat) ^ ((p - 1) / q) % p
+  IO.println s!"zeta = {zeta}"
+
+  -- Cosets of cubic residues mod q
+  -- g_q = 3
+  let g_q := 3
+  let mut H : List Nat := []
+  let mut x := 1
+  let g_q_3 := (g_q * g_q * g_q) % q
+  for _ in [0:(q-1)/3] do
+    H := x :: H
+    x := (x * g_q_3) % q
+  
+  let C1 := H.map (fun h => (h * g_q) % q)
+  let C2 := H.map (fun h => (h * g_q * g_q) % q)
+
+  -- Periods mod p
+  let sum_zeta (S : List Nat) : Nat :=
+    S.foldl (fun acc h => (acc + (zeta ^ h) % p) % p) 0
+  
+  let eta0 := sum_zeta H
+  let eta1 := sum_zeta C1
+  let eta2 := sum_zeta C2
+
+  -- Differences
+  let alpha_prime := (eta0 + p - eta1) % p
+  let beta_prime := (eta1 + p - eta2) % p
+  let gamma_prime := (eta2 + p - eta0) % p
+
+  -- Check sign convention
+  let prod := (alpha_prime * beta_prime) % p * gamma_prime % p
+  let q_mod_p := q % p
+  
+  let mut alpha := 0
+  let mut beta := 0
+  let mut gamma := 0
+
+  if prod == q_mod_p then
+    alpha := alpha_prime
+    beta := beta_prime
+    gamma := gamma_prime
+    IO.println "Sign convention: positive"
+  else
+    alpha := (p - alpha_prime) % p
+    beta := (p - beta_prime) % p
+    gamma := (p - gamma_prime) % p
+    IO.println "Sign convention: negative"
+
+  -- Solve 79 * beta = c0 + c1 * alpha + c2 * alpha^2 mod p
+  let sub (x y : Nat) := (x + p - y) % p
+  let mul (x y : Nat) := (x * y) % p
+  let add (x y : Nat) := (x + y) % p
+  let pow (x n : Nat) := x ^ n % p
+  let inv (x : Nat) := x ^ (p - 2) % p
+
+  let det := mul (sub beta alpha) (mul (sub gamma alpha) (sub gamma beta))
+  let det_inv := inv det
+
+  let rhs0 := mul 79 beta
+  let rhs1 := mul 79 gamma
+  let rhs2 := mul 79 alpha
+
+  -- Solve for c0, c1, c2
+  -- c0
+  let term0 := mul rhs0 (sub (mul beta (mul gamma gamma)) (mul gamma (mul beta beta)))
+  let term1 := mul rhs1 (sub (mul gamma (mul alpha alpha)) (mul alpha (mul gamma gamma)))
+  let term2 := mul rhs2 (sub (mul alpha (mul beta beta)) (mul beta (mul alpha alpha)))
+  let c0 := mul (add term0 (add term1 term2)) det_inv
+
+  -- c1
+  let term0_1 := mul 1 (sub (mul rhs1 (mul gamma gamma)) (mul rhs2 (mul beta beta)))
+  let term1_1 := mul 1 (sub (mul rhs2 (mul alpha alpha)) (mul rhs0 (mul gamma gamma)))
+  let term2_1 := mul 1 (sub (mul rhs0 (mul beta beta)) (mul rhs1 (mul alpha alpha)))
+  let c1 := mul (add term0_1 (add term1_1 term2_1)) det_inv
+
+  -- c2
+  let term0_2 := mul 1 (sub (mul beta rhs2) (mul gamma rhs1))
+  let term1_2 := mul 1 (sub (mul gamma rhs0) (mul alpha rhs2))
+  let term2_2 := mul 1 (sub (mul alpha rhs1) (mul beta rhs0))
+  let c2 := mul (add term0_2 (add term1_2 term2_2)) det_inv
+
+  let to_signed (x : Nat) : Int :=
+    if x > p / 2 then (x : Int) - p else x
+
+  IO.println s!"Coefficients for beta: c0={to_signed c0}, c1={to_signed c1}, c2={to_signed c2}"
+  
+  -- Also for gamma
+  let rhs0_g := mul 79 gamma
+  let rhs1_g := mul 79 alpha
+  let rhs2_g := mul 79 beta
+
+  let term0_g := mul rhs0_g (sub (mul beta (mul gamma gamma)) (mul gamma (mul beta beta)))
+  let term1_g := mul rhs1_g (sub (mul gamma (mul alpha alpha)) (mul alpha (mul gamma gamma)))
+  let term2_g := mul rhs2_g (sub (mul alpha (mul beta beta)) (mul beta (mul alpha alpha)))
+  let d0 := mul (add term0_g (add term1_g term2_g)) det_inv
+
+  let term0_1g := mul 1 (sub (mul rhs1_g (mul gamma gamma)) (mul rhs2_g (mul beta beta)))
+  let term1_1g := mul 1 (sub (mul rhs2_g (mul alpha alpha)) (mul rhs0_g (mul gamma gamma)))
+  let term2_1g := mul 1 (sub (mul rhs0_g (mul beta beta)) (mul rhs1_g (mul alpha alpha)))
+  let d1 := mul (add term0_1g (add term1_1g term2_1g)) det_inv
+
+  let term0_2g := mul 1 (sub (mul beta rhs2_g) (mul gamma rhs1_g))
+  let term1_2g := mul 1 (sub (mul gamma rhs0_g) (mul alpha rhs2_g))
+  let term2_2g := mul 1 (sub (mul alpha rhs1_g) (mul beta rhs0_g))
+  let d2 := mul (add term0_2g (add term1_2g term2_2g)) det_inv
+
+  IO.println s!"Coefficients for gamma: d0={to_signed d0}, d1={to_signed d1}, d2={to_signed d2}"
+
+#eval find_coeffs_1567
+
+def DreamAssumptions_1567 : Prop :=
+  alpha_int1567^3 = 1567 * alpha_int1567 + 1567 ∧
+  alpha_int1567 * beta_int1567 * gamma_int1567 = 1567 ∧
+  79 * beta_int1567 = 3 * alpha_int1567^2 - 44 * alpha_int1567 - 3134 ∧
+  79 * gamma_int1567 = -3 * alpha_int1567^2 - 35 * alpha_int1567 + 3134
+
+def N_mod_1567 (N : ℕ) [Fact (Nat.Prime N)] (hN : N ≠ 1567) : (ZMod 1567)ˣ :=
+  ZMod.unitOfCoprime N (Nat.Coprime.symm ((Nat.coprime_primes (by norm_num) (Fact.out)).mpr hN.symm))
+
+lemma sigma_int_zeta_pow_1567 (n : (ZMod 1567)ˣ) :
+  sigma_int1567 n zeta_int1567 = zeta_int1567 ^ (n : ZMod 1567).val := by
+    -- By definition of `sigma1567`, we know that `sigma1567 n (zeta1567) = zeta1567^n`.
+    have h_sigma_zeta : sigma1567 n (zeta1567) = zeta1567 ^ (n : ZMod 1567).val := by
+      unfold sigma1567; norm_num;
+      erw [ PowerBasis.equivOfMinpoly_gen ];
+      rfl;
+    unfold sigma_int1567; aesop;
+
+theorem artin_property_zeta_1567 (N : ℕ) [Fact (Nat.Prime N)] (hN : N ≠ 1567) (P : Ideal Ok1567) [P.IsPrime] (hP : P.LiesOver (Ideal.span {(N : ℤ)})) :
+  Ideal.Quotient.mk P (sigma_int1567 (N_mod_1567 N hN) zeta_int1567) = (Ideal.Quotient.mk P zeta_int1567)^N := by
+    -- Since $zeta_int1567$ is a root of unity, we have $zeta_int1567^{N \mod 1567} = zeta_int1567^N$.
+    have h_root_of_unity : zeta_int1567 ^ (N % 1567) = zeta_int1567 ^ N := by
+      -- Since $zeta_int1567$ is a root of unity of order 1567, we have $zeta_int1567^{1567} = 1$.
+      have h_root_of_unity : zeta_int1567 ^ 1567 = 1 := by
+        have h_zeta_int1567_pow : zeta1567 ^ 1567 = 1 := by
+          exact IsCyclotomicExtension.zeta_pow _ _ _;
+        exact Subtype.ext h_zeta_int1567_pow;
+      rw [ ← Nat.mod_add_div N 1567, pow_add, pow_mul ] ; aesop;
+    convert congr_arg ( Ideal.Quotient.mk P ) h_root_of_unity using 1;
+    convert congr_arg ( Ideal.Quotient.mk P ) ( sigma_int_zeta_pow_1567 ( N_mod_1567 N hN ) ) using 1
+
+theorem zeta_isPrimitiveRoot_1567 : IsPrimitiveRoot zeta1567 1567 := by
+  convert IsCyclotomicExtension.zeta_spec 1567 ℚ K1567
+
+theorem Ok1567_eq_adjoin : (⊤ : Subalgebra ℤ Ok1567) = Algebra.adjoin ℤ {zeta_int1567} := by
+  apply le_antisymm;
+  · have h_gen : ∀ x : K1567, IsIntegral ℤ x → x ∈ Algebra.adjoin ℤ {zeta1567} := by
+      have := @IsCyclotomicExtension.Rat.isIntegralClosure_adjoin_singleton_of_prime 1567;
+      specialize @this K1567 _ zeta1567 _ _ _ _;
+      · convert IsCyclotomicExtension.zeta_spec 1567 ℚ K1567;
+      · cases this ; aesop;
+    intro x hx;
+    have := h_gen x.val x.property;
+    rw [ Algebra.adjoin_singleton_eq_range_aeval ] at *;
+    obtain ⟨ p, hp ⟩ := this;
+    use p;
+    erw [ Polynomial.aeval_def, Polynomial.eval₂_eq_sum_range ] at * ; aesop;
+  · exact le_top
+
+theorem artin_property_1567 (N : ℕ) [Fact (Nat.Prime N)] (hN : N ≠ 1567) (P : Ideal Ok1567) [P.IsPrime] (hP : P.LiesOver (Ideal.span {(N : ℤ)})) (x : Ok1567) :
+  Ideal.Quotient.mk P (sigma_int1567 (N_mod_1567 N hN) x) = (Ideal.Quotient.mk P x)^N := by
+    -- We use `Al  gebra .adjoin_induction`   to  prove that the Artin property holds for any element `x` in the adjoin of `zeta_int1567`.
+    have h_induction : ∀ x ∈ Algebra.adjoin ℤ {zeta_int1567}, (Ideal.Quotient.mk P) (sigma_int1567 (N_mod_1567 N hN) x) = (Ideal.Quotient.mk P x) ^ N := by
+      intro x hx;
+      refine' Algebra.adjoin_induction _ _ _ _ hx <;> norm_num +zetaDelta at *;
+      · convert artin_property_zeta_1567 N hN P hP using 1;
+      · intro r; erw [ Ideal.Quotient.eq ] ; simp +decide [ ← ZMod.intCast_eq_intCast_iff ] ;
+        -- Since $r^N \equiv r \pmod{N}$, we have $r^N - r \in N\mathbb{Z}$.
+        have h_cong : (r ^ N - r : ℤ) ∈ Ideal.span {↑N} := by
+          exact Ideal.mem_span_singleton.mpr ( by haveI := Fact.mk ( Fact.out : Nat.Prime N ) ; simpa [ ← ZMod.intCast_zmod_eq_zero_iff_dvd ] );
+        -- Since $P$ lies over the ideal spanned by $N$, we have that $P$ contains the ideal spanned by $N$.
+        have hP_contains_span : Ideal.span {(N : ℤ)} ≤ P.comap (algebraMap ℤ Ok1567) := by
+          exact hP.1.le;
+        simpa using hP_contains_span h_cong |> fun h => by simpa using P.neg_mem h;
+      · intro x y hx hy hx' hy'; simp_all +decide [ ← map_add, ← map_pow ] ;
+        convert congr_arg₂ ( · + · ) hx' hy' using 1 <;> ring;
+        · exact congr_arg _ ( map_add _ _ _ );
+        · -- Since we're working modulo N, the binomial coefficients (N choose k) for k between 1 and N-1 are all divisible by N. Therefore, those terms vanish in the quotient ring.
+          have h_binom : ∀ k ∈ Finset.Ico 1 N, (N.choose k : Ok1567) ∈ P := by
+            have h_binom : ∀ k ∈ Finset.Ico 1 N, (N.choose k : ℤ) ∈ Ideal.span {(N : ℤ)} := by
+              exact fun k hk => Ideal.mem_span_singleton.mpr <| mod_cast Nat.dvd_of_mod_eq_zero <| by rw [ Nat.mod_eq_zero_of_dvd ] ; exact Nat.Prime.dvd_choose_self ( Fact.out : Nat.Prime N ) ( by linarith [ Finset.mem_Ico.mp hk ] ) ( by linarith [ Finset.mem_Ico.mp hk ] ) ;
+            have := hP.1;
+            simp_all +decide [ Ideal.mem_span_singleton, Ideal.mem_comap ];
+          have h_sum_zero : ∑ k ∈ Finset.Ico 1 N, (N.choose k : Ok1567) * x^(N-k) * y^k ∈ P := by
+            exact P.sum_mem fun k hk => P.mul_mem_right _ <| P.mul_mem_right _ <| h_binom k hk;
+          have h_sum_zero : (x + y)^N = x^N + y^N + ∑ k ∈ Finset.Ico 1 N, (N.choose k : Ok1567) * x^(N-k) * y^k := by
+            rw [ add_comm, add_pow ];
+            rw [ Finset.sum_Ico_eq_sub _ ] <;> norm_num [ mul_assoc, mul_comm, mul_left_comm, Finset.sum_range_succ ] ; ring;
+            exact Nat.Prime.pos Fact.out;
+          erw [ Ideal.Quotient.eq ] ; aesop;
+      · intro x y hx hy hx' hy'; rw [ mul_pow, hx', hy' ] ;
+    convert h_induction x _;
+    convert Ok1567_eq_adjoin ▸ Algebra.mem_top
+
+def chi1567 (x : ZMod 1567) : ZMod 1567 := x ^ 522
+
+lemma chi1567_mul (x y : ZMod 1567) : chi1567 (x * y) = chi1567 x * chi1567 y := by
+  native_decide +revert
+
+theorem Ok1567_eq_adjoin_2 : (⊤ : Subalgebra ℤ Ok1567) = Algebra.adjoin ℤ {zeta_int1567} := by
+  rw [ eq_comm ];
+  convert Ok1567_eq_adjoin.symm
+
+def check_chi_values_1567 : IO Unit := do
+  let q := 1567
+  let s1 := 1031
+  let s2 := 535
+  let g := 3
+  let chi (n : Nat) := (n : Nat) ^ 522 % q
+  let chig := chi g
+  IO.println s!"chi(g) = {chig}"
+  if chig == s1 then IO.println "chi(g) = s1"
+  else if chig == s2 then IO.println "chi(g) = s2"
+  else IO.println "chi(g) is neither"
+
+#eval check_chi_values_1567
+
+lemma sigma_eta_1567 (n : (ZMod 1567)ˣ) (S : Finset (ZMod 1567)) :
+  sigma_int1567 n (eta_int1567 S) = eta_int1567 (S.image (fun x => (n : ZMod 1567) * x)) := by
+    unfold eta_int1567;
+    simp +zetaDelta at *;
+    refine' Finset.sum_congr rfl fun x hx => _;
+    rw [ sigma_int_zeta_pow_1567 ];
+    rw [ ← pow_mul, mul_comm ];
+    have h_exp : ∀ (a b : ZMod 1567), zeta_int1567 ^ (a.val * b.val) = zeta_int1567 ^ ((a * b).val) := by
+      intro a b
+      have h_exp : zeta_int1567 ^ (1567 : ℕ) = 1 := by
+        have h_exp : zeta1567 ^ 1567 = 1 := by
+          exact IsCyclotomicExtension.zeta_pow _ _ _;
+        exact Subtype.ext h_exp
+      rw [ ← Nat.mod_add_div ( a.val * b.val ) 1567, pow_add, pow_mul ] ; aesop;
+    rw [ h_exp, mul_comm ]
+
+lemma action_H_1567 (n : ZMod 1567) (hn : n ∈ H1567) :
+  H1567.image (fun x => n * x) = H1567 ∧
+  C1_1567.image (fun x => n * x) = C1_1567 ∧
+  C2_1567.image (fun x => n * x) = C2_1567 := by
+    have h_cosets_preserved : ∀ n ∈ H1567, Finset.image (fun x => n * x) H1567 = H1567 := by
+      intro n hn;
+      apply Finset.eq_of_subset_of_card_le (Finset.image_subset_iff.mpr (fun x hx => by
+        native_decide +revert)) (by
+      rw [ Finset.card_image_of_injective ];
+      native_decide +revert);
+    have h_cosets_preserved_C1 : ∀ n ∈ H1567, Finset.image (fun x => n * x) C1_1567 = C1_1567 := by
+      intros n hn
+      have h_cosets_preserved_C1 : Finset.image (fun x => n * x) C1_1567 = Finset.image (fun x => g1567 * x) (Finset.image (fun x => n * x) H1567) := by
+        ext; simp [C1_1567];
+        simp +decide only [mul_left_comm];
+      rw [ h_cosets_preserved_C1, h_cosets_preserved n hn ];
+      native_decide +revert;
+    refine ⟨ h_cosets_preserved n hn, h_cosets_preserved_C1 n hn, ?_ ⟩;
+    native_decide +revert
+
+lemma action_C1_1567 (n : ZMod 1567) (hn : n ∈ C1_1567) :
+  H1567.image (fun x => n * x) = C1_1567 ∧
+  C1_1567.image (fun x => n * x) = C2_1567 ∧
+  C2_1567.image (fun x => n * x) = H1567 := by
+    revert n hn;
+    intro n hnC1
+    have hnH : n ∈ Finset.image (fun x => 3 * x) H1567 := by
+      exact hnC1;
+    obtain ⟨ hnH, hnC1 ⟩ := Finset.mem_image.mp hnH;
+    have h_mul_H : Finset.image (fun x => hnH * x) H1567 = H1567 ∧ Finset.image (fun x => hnH * x) C1_1567 = C1_1567 ∧ Finset.image (fun x => hnH * x) C2_1567 = C2_1567 := by
+      exact action_H_1567 hnH hnC1.1;
+    have h_mul_C1 : Finset.image (fun x => 3 * x) H1567 = C1_1567 ∧ Finset.image (fun x => 3 * x) C1_1567 = C2_1567 ∧ Finset.image (fun x => 3 * x) C2_1567 = H1567 := by
+      native_decide +revert;
+    have h_mul_C1 : Finset.image (fun x => 3 * hnH * x) H1567 = Finset.image (fun x => 3 * x) (Finset.image (fun x => hnH * x) H1567) ∧ Finset.image (fun x => 3 * hnH * x) C1_1567 = Finset.image (fun x => 3 * x) (Finset.image (fun x => hnH * x) C1_1567) ∧ Finset.image (fun x => 3 * hnH * x) C2_1567 = Finset.image (fun x => 3 * x) (Finset.image (fun x => hnH * x) C2_1567) := by
+      simp +decide [ mul_assoc, Finset.ext_iff ];
+    aesop
+
+lemma action_C2_1567 (n : ZMod 1567) (hn : n ∈ C2_1567) :
+  H1567.image (fun x => n * x) = C2_1567 ∧
+  C1_1567.image (fun x => n * x) = H1567 ∧
+  C2_1567.image (fun x => n * x) = C1_1567 := by
+    revert hn;
+    -- By definition of $C2_1567$, if $n \in C2_1567$, then there exists $h \in H1567$ such that $n = g^2 * h$.
+    intro hn
+    obtain ⟨h, hh⟩ : ∃ h ∈ H1567, n = 3^2 * h := by
+      native_decide +revert;
+    obtain ⟨hh₁, rfl⟩ := hh;
+    -- Since $h \in H1567$, multiplying by $h$ permutes the elements of $H1567$, $C1_1567$, and $C2_1567$.
+    have h_perm : Finset.image (fun x => h * x) H1567 = H1567 ∧ Finset.image (fun x => h * x) C1_1567 = C1_1567 ∧ Finset.image (fun x => h * x) C2_1567 = C2_1567 := by
+      exact?;
+    have h_perm : Finset.image (fun x => 3^2 * x) H1567 = C2_1567 ∧ Finset.image (fun x => 3^2 * x) C1_1567 = H1567 ∧ Finset.image (fun x => 3^2 * x) C2_1567 = C1_1567 := by
+      native_decide;
+    have h_perm : Finset.image (fun x => 3^2 * h * x) H1567 = Finset.image (fun x => 3^2 * x) (Finset.image (fun x => h * x) H1567) ∧ Finset.image (fun x => 3^2 * h * x) C1_1567 = Finset.image (fun x => 3^2 * x) (Finset.image (fun x => h * x) C1_1567) ∧ Finset.image (fun x => 3^2 * h * x) C2_1567 = Finset.image (fun x => 3^2 * x) (Finset.image (fun x => h * x) C2_1567) := by
+      simp +decide [ mul_assoc, Finset.ext_iff ];
+    grind +ring
+
+lemma global_permutation_1567 (n : (ZMod 1567)ˣ) :
+  ((n : ZMod 1567) ∈ C1_1567 → sigma_int1567 n alpha_int1567 = beta_int1567) ∧
+  ((n : ZMod 1567) ∈ C2_1567 → sigma_int1567 n alpha_int1567 = gamma_int1567) ∧
+  ((n : ZMod 1567) ∈ H1567 → sigma_int1567 n alpha_int1567 = alpha_int1567) := by
+    constructor;
+    · intro hn;
+      unfold alpha_int1567 beta_int1567;
+      unfold alpha_prime_int1567 beta_prime_int1567;
+      unfold eta0_int1567 eta1_int1567 eta2_int1567;
+      unfold sign_1567;
+      split_ifs <;> simp +decide [ *, map_sub, map_mul ];
+      · rw [ sigma_eta_1567, sigma_eta_1567 ];
+        rw [ action_C1_1567 _ hn |>.1, action_C1_1567 _ hn |>.2.1 ];
+      · rw [ sigma_eta_1567, sigma_eta_1567 ];
+        rw [ action_C1_1567 _ hn |>.2.1, action_C1_1567 _ hn |>.1 ];
+    · constructor;
+      · intro hn;
+        have := action_C2_1567 n hn;
+        unfold alpha_int1567 gamma_int1567;
+        unfold alpha_prime_int1567 gamma_prime_int1567; simp +decide [ *, mul_sub ] ;
+        unfold eta0_int1567 eta1_int1567 eta2_int1567; rw [ sigma_eta_1567, sigma_eta_1567 ] ; aesop;
+      · intro hn
+        unfold alpha_int1567;
+        unfold alpha_prime_int1567;
+        unfold eta0_int1567 eta1_int1567;
+        unfold sign_1567;
+        split_ifs <;> simp +decide [ *, map_sub, map_mul ];
+        · rw [ sigma_eta_1567, sigma_eta_1567 ];
+          rw [ action_H_1567 _ hn |>.1, action_H_1567 _ hn |>.2.1 ];
+        · rw [ sigma_eta_1567, sigma_eta_1567 ];
+          rw [ action_H_1567 _ hn |>.2.1, action_H_1567 _ hn |>.1 ]
+
+def check_s_relation_1567 : IO Unit := do
+  let s1 := 1031
+  let s2 := 535
+  let q := 1567
+  let s2_sq := s2 * s2 % q
+  IO.println s!"s2^2 = {s2_sq}"
+  if s2_sq == s1 then IO.println "s2^2 = s1" else IO.println "s2^2 != s1"
+
+#eval check_s_relation_1567
+
+lemma mem_C1_iff_chi_eq_s2_1567 (n : ZMod 1567) (hn : n ≠ 0) : n ∈ C1_1567 ↔ chi1567 n = s2_1567 := by
+  native_decide +revert
+
+lemma mem_C2_iff_chi_eq_s1_1567 (n : ZMod 1567) (hn : n ≠ 0) : n ∈ C2_1567 ↔ chi1567 n = s1_1567 := by
+  native_decide +revert
+
+theorem final_result_1567 (N : ℕ) [Fact (Nat.Prime N)] (hN : N ≠ 1567) (hN_odd : N % 2 = 1) (hN_a : Nat.Coprime 79 N)
+  (P : Ideal Ok1567) [P.IsMaximal] (hP : P.LiesOver (Ideal.span {(N : ℤ)}))
+  (h_assum : DreamAssumptions_1567) :
+  let alpha_bar := Ideal.Quotient.mk P alpha_int1567
+  let beta_bar := Ideal.Quotient.mk P beta_int1567
+  let gamma_bar := Ideal.Quotient.mk P gamma_int1567
+  (chi1567 N = s1_1567 → alpha_bar ^ N = gamma_bar) ∧
+  (chi1567 N = s2_1567 → alpha_bar ^ N = beta_bar) := by
+    constructor;
+    · intro hchi
+      have hsigma : sigma_int1567 (N_mod_1567 N hN) alpha_int1567 = gamma_int1567 := by
+        -- By the properties of the Galois automorphism and the cubic character, we know that $\sigma_N(\alpha) = \gamma$ when $\chi(N) = s1_1567$.
+        apply (global_permutation_1567 (N_mod_1567 N hN)).right.left;
+        convert mem_C2_iff_chi_eq_s1_1567 _ _ |>.2 hchi;
+        rw [ Ne.eq_def, ZMod.natCast_eq_zero_iff ] ; exact fun h => hN <| by have := Nat.dvd_of_mod_eq_zero ( show N % 1567 = 0 from Nat.mod_eq_zero_of_dvd h ) ; rw [ Nat.dvd_prime ( Fact.out : Nat.Prime N ) ] at this ; aesop;
+      rw [ ← hsigma, ← artin_property_1567 N hN P hP ];
+    · intro h;
+      have h_sigma_N_eq_beta : sigma_int1567 (N_mod_1567 N hN) alpha_int1567 = beta_int1567 := by
+        apply (global_permutation_1567 (N_mod_1567 N hN)).left;
+        have := mem_C1_iff_chi_eq_s2_1567 ( N_mod_1567 N hN ) ?_ <;> aesop;
+      rw [ ← h_sigma_N_eq_beta, ← artin_property_1567 N hN P hP ]
+
 /-
 Definitions for q = 8563, s1, s2, and the cubic character c(N).
 -/
@@ -392,12 +885,17 @@ Definition of N mod 8563 as a unit, and the action of sigma on zeta.
 def N_mod_8563 (N : ℕ) [Fact (Nat.Prime N)] (hN : N ≠ 8563) : (ZMod 8563)ˣ :=
   ZMod.unitOfCoprime N (Nat.Coprime.symm ((Nat.coprime_primes (by norm_num) (Fact.out)).mpr hN.symm))
 
-
-
-
-
-
-
+lemma sigma_int_zeta_pow_8563 (n : (ZMod 8563)ˣ) :
+  sigma_int8563 n zeta_int8563 = zeta_int8563 ^ (n : ZMod 8563).val := by
+    convert artin_property_zeta_1567 using 1;
+    constructor;
+    · exact?;
+    · unfold sigma_int8563;
+      unfold sigma8563;
+      erw [ Subtype.mk_eq_mk ] ; norm_num;
+      erw [ PowerBasis.equivOfMinpoly_apply ];
+      erw [ PowerBasis.lift_gen ];
+      unfold IsPrimitiveRoot.powerBasis; aesop;
 
 /-
 The Artin property for zeta: sigma_N(zeta) is congruent to zeta^N modulo P.
