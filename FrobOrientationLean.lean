@@ -19,3 +19,13 @@ import FrobOrientationLean.Q1489
 import FrobOrientationLean.Q1567
 import FrobOrientationLean.Q1987
 import FrobOrientationLean.Q2557
+import FrobOrientationLean.Q3313
+import FrobOrientationLean.Q3547
+import FrobOrientationLean.Q4297
+import FrobOrientationLean.Q5119
+import FrobOrientationLean.Q5557
+import FrobOrientationLean.Q7489
+import FrobOrientationLean.Q8017
+-- import FrobOrientationLean.Q8563
+import FrobOrientationLean.Q9127
+import FrobOrientationLean.Q9319
