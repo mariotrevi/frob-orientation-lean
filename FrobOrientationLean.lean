@@ -30,3 +30,5 @@ import FrobOrientationLean.Q8017
 import FrobOrientationLean.Q9127
 import FrobOrientationLean.Q9319
 import FrobOrientationLean.Q9907
+import FrobOrientationLean.Q10513
+import FrobOrientationLean.Q11779
