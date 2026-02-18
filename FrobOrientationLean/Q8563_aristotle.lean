@@ -428,7 +428,7 @@ lemma sum_eta_eq_minus_one_8563 : eta_0_8563 + eta_1_8563 + eta_2_8563 = -1 := b
 /-
 Define the proposition representing the period equation.
 -/
-def period_equation_holds_8563 : Prop := alpha_8563^3 = 8563 * alpha_8563 + 8563
+def period_equation_holds : Prop := alpha_8563^3 = 8563 * alpha_8563 + 8563
 
 /-
 Define the Galois automorphism sigma and its action on zeta.
@@ -476,7 +476,7 @@ def zeta_int_8563 : Ok8563 := ⟨zeta8563, zeta_isIntegral_8563⟩
 Define the hypotheses for the Dream Theorem (period equation and algebraic relations).
 -/
 def DreamTheoremHypotheses : Prop :=
-  period_equation_holds_8563 ∧
+  period_equation_holds ∧
   (185 * beta_8563 = 3 * alpha_8563^2 - 97 * alpha_8563 - 17126) ∧
   (185 * gamma_8563 = -3 * alpha_8563^2 + 88 * alpha_8563 + 17126)
 
