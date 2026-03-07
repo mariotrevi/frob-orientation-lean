@@ -8,7 +8,7 @@ This project establishes the orientation of the Frobenius automorphism for a ran
 
 The proof is split into two rigorous components:
 
-1. **The Lean 4 Formalization (`proof_frobenius_orientation_aristotle.lean`)**
+1. **The Lean 4 Formalization (`proof2_frobenius_orientation_aristotle.lean`)**
    Establishes the universal deduction in $N$ given a valid $q$-witness. It proves the finite-field Frobenius conclusions by first establishing the Galois action on roots in the residue field of a cyclotomic extension, and then transporting that information back to the `AdjoinRoot(f)` model. The theorem is conditional on a sharply defined cyclotomic-period witness package (`h_valid_q`).
 
 2. **The PARI/GP Certificate (`PARI_GP_Certificate_Proof.txt`)**
