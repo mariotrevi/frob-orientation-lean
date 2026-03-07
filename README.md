@@ -35,7 +35,7 @@ The original single-prime formalization verified $q = 2659$. Under the newly gen
 To verify the Lean 4 proofs:
 ```bash
 lake exe cache get
-lake build
+lake env lean proof2_frobenius_orientation_aristotle.lean
 
 ```
 
